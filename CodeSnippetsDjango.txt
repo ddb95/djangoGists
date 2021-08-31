@@ -1,0 +1,26 @@
+1. Create Model from Existing table in DB
+    You can generate the model of a single table, running this command
+    python manage.py inspectdb TableName > output.py
+
+2. Multiple Tables
+    python manage.py inspectdb table1 table2 tableN > output.py
+
+3. Distinct values from a column in a table inside a DB
+    # Get Data
+    queryset = DeMeMasterData.objects.all()
+    # Serialize
+    serializer_class = sc.GetSimulatorInputDataSerializer
+    # request type
+    @action(methods=['post'], detail=True)
+    # request method
+    def getData(self, *args, **kwargs):
+        level = self.request.data['level']
+        if level=='Retailer':
+            retailersList = []
+            retailerValues = list(self.queryset.order_by('ext_o_customer_name_internal').values('ext_o_customer_name_internal').distinct())
+            for items in retailerValues:
+                retailersList.append(items['ext_o_customer_name_internal'])
+            retailersList = [i for i in retailersList if i]
+            return Response(retailersList, status=status.HTTP_200_OK)
+
+4. 
