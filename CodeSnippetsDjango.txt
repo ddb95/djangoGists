@@ -89,4 +89,209 @@ dividends=[
 11. How to get all values for a certain field in django ORM?
     user_info.objects.values_list('name', flat=True).distinct()
 
-12. 
+12. Migrations not working: 
+    Somehow your migrations are virtually or faked applied in the database, Truncating django_migrations table should work.
+
+    Delete all the migrations files:
+
+    find . -path "/migrations/.py" -not -name "init.py" -delete find . -path "/migrations/.pyc" -delete
+
+    Truncate table:
+
+    truncate django_migrations
+
+    makemigrations, migrate -> python.
+
+13. Update specific rows in db
+
+    class UserConfig(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin,
+mixins.UpdateModelMixin,mixins.DestroyModelMixin):
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    queryset = UserSessionConfig.objects.all()
+    serializer_class = sc.UserSessionConfigSerializer
+    def get_queryset(self):
+        config, created = UserSessionConfig.objects.get_or_create(user_id=self.request.user.id, created_by=self.request.user.email)
+        return self.queryset.filter(user_id=self.request.user.id)
+    def put(self, request, format=None, *args , **kwargs):
+        get_serializer = sc.ModelMetaGetSerializer(request.data)
+        dataStringFormat = {}
+        for values in self.request.data:
+            dataStringFormat[values] = self.request.data[values]
+        updatedOn = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        dataStringFormat['last_updated'] = updatedOn
+        UserSessionConfig.objects.update_or_create(user_id=self.request.user.id, defaults=dataStringFormat) #user_id is unique and this it will update or create
+        return Response( "Record Updated", status=status.HTTP_201_CREATED)
+
+14. Django models | get specific columns and values
+    QuerySet.values_list()
+    Entry.objects.values('first_name')
+15. Remove 0 and empty string except for nans from dataframe
+    dataframe = dataframe.loc[~((dataframe['int_o_nsv'] == 0) | (dataframe['ext_d_rsv_wo_tax'] == 0) | (dataframe['base_price_elasticity'] == 0) | (dataframe['int_o_cogs'] == 0) | (dataframe['ext_o_units'] == 0) | (dataframe['retailer_median_base_price'] == 0) | (dataframe['ext_o_local_pack_type'] == '') | (dataframe['ext_o_local_sub_brand'] == '') | (dataframe['ext_o_ppg'] == '') | (dataframe['ext_o_customer_name_internal'] == ''))]
+    dataframeForImputedColumns = dataframe.drop_duplicates('imputed_combination', keep='first')
+    dataframeForImputedColumns = dataframeForImputedColumns.loc[~((dataframeForImputedColumns['imputed_combination'] == 'nan') | (dataframeForImputedColumns['imputed_combination'] == 'Excluded') | (dataframeForImputedColumns['imputed_combination'] == ''))]
+    
+16. Select specific columns from dataframe
+    dataframeForImputedColumns = dataframeForImputedColumns[['ext_o_ppg', 'ext_o_local_brand', 'ext_o_local_sub_brand', 'ext_o_local_pack_type', 'ext_o_global_category', 'ext_o_customer_name_internal',  'imputed_combination', 'planning_group']]
+
+17. Group by in dataframe columns using functions
+    retailPrice = dataframe.groupby(['planning_group']).apply(wavg, 'retailer_median_base_price', 'ext_d_rsv_wo_tax')
+
+18. Converting dataframe to a object with key value structure
+    dataframeForImputedColumns.to_dict('records')
+
+19. Check if value already exists within list of dictionaries
+    a = [
+            {'main_color': 'red', 'second_color':'blue'},
+            {'main_color': 'yellow', 'second_color':'green'},
+            {'main_color': 'yellow', 'second_color':'blue'},
+        ]
+    if not any(d['main_color'] == 'red' for d in a):
+
+20. Length of object
+    namelist = { "name":"xyz", "version":"1.0.0" }
+    var size = Object.keys(namelist).length;
+    console.log(size);
+
+21. Show data based on condition in Angular
+    <tr class="small-font" *ngFor="let currentValue of selectedScenarioDetails">
+        <td>{{currentValue.rowName }}</td>
+        <td>
+          {{currentValue.MACPercentNSV + "%" }}
+          <i *ngIf="(currentValue.rowName == 'ABS change' || currentValue.rowName == '% change') && checkArrowDisplay(currentValue.MACPercentNSV)"
+            class="fa" aria-hidden="true" [ngClass]="{
+          'fa-arrow-down color-danger':
+          !isArrowDiplaying(currentValue.MACPercentNSV) ,
+          'fa-arrow-up color-success':
+          isArrowDiplaying(currentValue.MACPercentNSV)
+        }"></i>
+        </td>
+    </tr>
+    checkArrowDisplay(data): boolean {
+    if (data) {
+        const stringData = data.toString();
+            if (stringData.includes('NaN') || stringData === '0') {
+                return false;
+            }
+            return true;
+        }
+    return false;
+    }
+    isArrowDiplayingForVals(oldVal, newVal): boolean {
+        return newVal > oldVal ? true : false;
+    }
+
+22. SAML2
+    a. Get Azure Active Directory 
+    b. In Settings.py
+    Add 'django_saml2_auth' to INSTALLED_APPS
+
+    INSTALLED_APPS = [
+        '...',
+        'django_saml2_auth',
+    ]
+    SAML2_AUTH = {
+        # Metadata is required, choose either remote url or local file path
+        'METADATA_AUTO_CONF_URL': os.getenv('SAML_METADATA_CONF_URL'),
+        'METADATA_LOCAL_FILE_PATH': BASE_DIR / 'config/Prod - FAST-RTM-PROD.xml',
+        'METADATA_AUTO_CONF_URL': 'https://login.microsoftonline.com/455f1bc7-fa3e-43ab-ad2b-d8f26ba34fda/federationmetadata/2007-06/federationmetadata.xml?appid=6d496b0e-4dd1-4429-83d4-14b9a2ae6689',
+        'METADATA_LOCAL_FILE_PATH': 'app/Azure AD SAML Toolkit.xml',
+
+        # Optional settings below
+        'DEFAULT_NEXT_URL': '/admin',
+        # Custom target redirect URL after the user get logged in. Default to /admin if not set. This setting will be overwritten if you have parameter ?next= specificed in the login URL.
+        'CREATE_USER': 'True',  # Create a new Django user when a new user logs in. Defaults to True.
+        'NEW_USER_PROFILE': {
+            'USER_GROUPS': [],  # The default group name when a new user logs in
+            'ACTIVE_STATUS': True,  # The default active status for new users
+            'STAFF_STATUS': True,  # The staff status for new users
+            'SUPERUSER_STATUS': False,  # The superuser status for new users
+        },
+        'ATTRIBUTES_MAP': {
+            'email': 'emailAddress',
+            'username': 'http://schemas.microsoft.com/identity/claims/displayname',
+            'first_name': 'givenName',
+            'last_name': 'surname',
+        },
+        'TRIGGER': {
+            # 'CREATE_USER': 'path.to.your.new.user.hook.method',
+            'BEFORE_LOGIN': 'core.services.update_user',
+        },
+        'ASSERTION_URL': os.getenv('SAML_ASSERTION_URL'),
+        'ASSERTION_URL': 'https://127.0.0.1:8000',
+        # Custom URL to validate incoming SAML requests against
+        'ENTITY_ID': os.getenv('SAML_ENTITY_ID'),
+        'ENTITY_ID': 'https://127.0.0.1:4200',
+        # Populates the Issuer element in authn request
+        'NAME_ID_FORMAT': saml2.saml.NAMEID_FORMAT_PERSISTENT,  # Sets the Format property of authn NameIDPolicy element
+        'USE_JWT': True,
+        # Set this to True if you are running a Single Page Application (SPA) with Django Rest Framework (DRF), and are using JWT authentication to authorize client users
+        'FRONTEND_URL': os.getenv('SAML_FRONTEND_URL'),
+        'FRONTEND_URL': 'https://127.0.0.1:4200/',
+        # Redirect URL for the client if you are using JWT auth with DRF. See explanation below
+    }
+    c. Create file -> core -> services.py 
+    Services.update_user
+    def update_user(user_identity):
+    try:
+        user_email = user_identity[settings.SAML2_AUTH.get('ATTRIBUTES_MAP', {}).get('email', 'Email')][0]
+        user_first_name = user_identity[settings.SAML2_AUTH.get('ATTRIBUTES_MAP', {}).get('first_name', 'FirstName')][0]
+        user_last_name = user_identity[settings.SAML2_AUTH.get('ATTRIBUTES_MAP', {}).get('last_name', 'LastName')][0]
+
+        user = getSingleRecordResult('SELECT * FROM AUTH_USER WHERE username = ?', (user_email))
+        print(user, 'Service.py 18')
+        if user == None:
+            print(user, 'Service.py 21 Update_user')
+            executeDML('INSERT INTO AUTH_USER(username, password, first_name, '
+                       'last_name, email, is_staff, is_active, date_joined, is_superuser) '
+                       'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)', (user_email, uuid.uuid1(), user_first_name,
+                                                             user_last_name, user_email, 0, 1, date.today(), 0))
+    except Exception as error:
+        print(error, 'service.py 27')
+
+
+    d. urls.py
+        from django.contrib import admin
+        from django.urls import path,include
+        import django_saml2_auth.views
+        from django.conf.urls import url
+        urlpatterns = [
+            path('api/', include('api.urls')),
+            path('admin/', admin.site.urls),
+            url(r'^saml2_auth/', include('django_saml2_auth.urls')),
+            url(r'^accounts/login/$', django_saml2_auth.views.signin),
+        ]
+    
+    e. Frontend
+    
+    ngOnInit() {
+    this.token = this.route.snapshot.queryParams.token;
+    status = this.route.snapshot.queryParams.status;
+    if(status === 'logout') {
+      this.enableMicrosoftButton = true;
+    } else if (this.token == null || this.token == undefined) {
+      // window.location.href = environment.serverUrl+"accounts/login";
+    } else {
+      const data = { token: 'Bearer '+this.token };
+      this.login(data);
+    }
+  }
+
+  singleSignOn() {
+    window.location.href = environment.serverUrl+'accounts/login';
+  }
+
+    f. Install xmlsec1 in Linux Machine- sudo apt-get install xmlsec1
+        pip install xmlsec
+        sudo apt-get install libxmlsec1-dev
+        sudo apt-get install libxmlsec1-dev pkg-config
+        pip install django_saml2_auth
+
+23. SSL Server Command for Django and Angular 10
+    Angular -> ng serve --ssl
+    Django -> python manage.py runsslserver
+                pip install django-sslserver
+
+24. JWT_token decode
+    - www.jwt.io
+

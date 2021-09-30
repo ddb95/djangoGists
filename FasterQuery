@@ -1,0 +1,5 @@
+1. Using cache
+from django.core.cache import cache
+cache.set('data', queryset, 30)
+cache.get('my_key')
+cache.clear()
