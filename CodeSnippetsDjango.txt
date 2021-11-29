@@ -295,3 +295,10 @@ mixins.UpdateModelMixin,mixins.DestroyModelMixin):
 24. JWT_token decode
     - www.jwt.io
 
+26. Virtual environment
+Install-
+    $ pip install virtualenv
+Create-
+    $ python3 -m venv env
+Activate-
+    $ source env/bin/activate
