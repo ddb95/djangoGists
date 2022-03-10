@@ -181,7 +181,7 @@ mixins.UpdateModelMixin,mixins.DestroyModelMixin):
         return newVal > oldVal ? true : false;
     }
 
-22. SAML2
+22. SAML2 -> https://github.com/fangli/django-saml2-auth
     a. Get Azure Active Directory 
     b. In Settings.py
     Add 'django_saml2_auth' to INSTALLED_APPS
@@ -295,10 +295,39 @@ mixins.UpdateModelMixin,mixins.DestroyModelMixin):
 24. JWT_token decode
     - www.jwt.io
 
-26. Virtual environment
+25. Virtual environment
 Install-
     $ pip install virtualenv
 Create-
     $ python3 -m venv env
 Activate-
     $ source env/bin/activate
+
+26. Running Mssql server in WSL
+1. https://docs.microsoft.com/en-us/sql/linux/quickstart-install-connect-ubuntu?view=sql-server-ver15
+2. Troubleshoot - https://github.com/MicrosoftDocs/WSL/issues/815
+3. sudo service mssql-server start 
+4. sudo -u mssql /opt/mssql/bin/sqlservr -c -d/var/opt/mssql/data/master.mdf -l/var/opt/mssql/data/mastlog.ldf -e/var/opt/mssql/log/errorlog -x
+5. sqlcmd -S localhost -U sa -P "Test@1234"
+
+Postgres_Duplicates
+select [Cluster_2], count(*)
+from [MARS_DEMO_MEXICO].[dbo].[Tl_StoreMstr_MX]
+group by [Cluster_2]
+HAVING count(*) > 1
+
+
+27. Select Default environment
+Create a virtualenv and then "Ctrl + Shift + P" and "Python: Select Interpreter"
+Select your virtualenv environment
+
+28. Run django in a new port
+In your project Settings.py file add the following line
+
+from django.core.management.commands.runserver import Command as runserver
+runserver.default_port = "8080"
+
+python manage.py runserver
+
+29. Angular project in a new folder
+npm start -- --port 4301
