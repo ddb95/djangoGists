@@ -3,3 +3,11 @@ from django.core.cache import cache
 cache.set('data', queryset, 30)
 cache.get('my_key')
 cache.clear()
+
+2. MS SQL Insert Values
+SET IDENTITY_INSERT [MARS_Latest].[dbo].[Tl_RegionMstr] ON
+
+INSERT INTO [MARS_Latest].[dbo].[Tl_RegionMstr]([id],[region_code],[region_name]) VALUES (5, 'US','United States of America')
+
+3. Update Values
+UPDATE [MARS_Latest].[dbo].[Tl_UserRegion_map] SET region_id=5, is_default_region=5 where id=7
