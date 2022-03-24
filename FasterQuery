@@ -11,3 +11,14 @@ INSERT INTO [MARS_Latest].[dbo].[Tl_RegionMstr]([id],[region_code],[region_name]
 
 3. Update Values
 UPDATE [MARS_Latest].[dbo].[Tl_UserRegion_map] SET region_id=5, is_default_region=5 where id=7
+
+4. Add columns
+
+  Alter TABLE [MARS_Latest].[dbo].[Tl_TestMstr_UK_CBU] 
+  ADD channel varchar(255);
+  
+  Alter TABLE [MARS_Latest].[dbo].[Tl_TestMstr_UK_CBU] 
+  DROP COLUMN channel;
+  
+  ALTER TABLE [MARS_Latest].[dbo].[Tl_TestMstr_UK_CBU] 
+  ALTER COLUMN consumption nvarchar(max);
